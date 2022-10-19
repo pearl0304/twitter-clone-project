@@ -1,4 +1,4 @@
-import React, {ButtonHTMLAttributes, ChangeEvent, MouseEvent, useState} from "react";
+import React, {ChangeEvent, MouseEvent, useState} from "react";
 // FIREBASE
 import {
     createUserWithEmailAndPassword,

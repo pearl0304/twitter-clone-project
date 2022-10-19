@@ -1,17 +1,22 @@
 import React, {ChangeEvent, useEffect, useState} from "react";
-import {firestoreJob} from "../initFirebase";
-import {collection, addDoc, getDocs, doc, onSnapshot, query, where, orderBy} from "firebase/firestore";
 import moment from "moment";
+import {Tweets} from "../components/Tweets";
 
-interface Tweet {
+// FIREBASE
+import {firestoreJob} from "../initFirebase";
+import {collection, addDoc, onSnapshot, query, where, orderBy} from "firebase/firestore";
+
+
+interface TweetInterface {
     id: string,
+    uid: string,
     text: string
 }
 
 export const Home = ({userObj}: any) => {
     const db_path = 'tweets';
     const [tweet, setTweet] = useState<string>("");
-    const [tweets, setTweets] = useState<Tweet[]>([]);
+    const [tweets, setTweets] = useState<TweetInterface[]>([]);
 
     useEffect(() => {
         const q = query(collection(firestoreJob, db_path), orderBy("date_created", "desc"));
@@ -59,10 +64,7 @@ export const Home = ({userObj}: any) => {
             <input type={'submit'} value={'tweet'}/>
         </form>
         <div>
-            {tweets.map((tweet) =>
-                <div key={tweet.id}>
-                    <h4>{tweet.text}</h4>
-                </div>
+            {tweets.map((tweet) => <Tweets tweet={tweet} key={tweet.id} is_owner={tweet.uid === userObj.uid}/>
             )}
         </div>
     </div>)
