@@ -1,6 +1,12 @@
-import React, {ChangeEvent, useState} from "react";
+import React, {ButtonHTMLAttributes, ChangeEvent, MouseEvent, useState} from "react";
 // FIREBASE
-import {createUserWithEmailAndPassword, signInWithEmailAndPassword} from "firebase/auth";
+import {
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    GoogleAuthProvider,
+    GithubAuthProvider,
+    signInWithPopup
+} from "firebase/auth";
 import {firebaseAuth} from "../initFirebase";
 
 type AuthType = {
@@ -32,9 +38,15 @@ export const Auth = () => {
                         console.log('User account created % sign in', user)
                     })
                     .catch(e => {
-                        if (e.code === 'auth/email-already-in-use') {setError('Duplicate Email')}
-                        if (e.code === 'auth/invalid-email') {setError('Email is not invalid')}
-                        if (e.code === 'auth/weak-password') {setError('Please change strong password')}
+                        if (e.code === 'auth/email-already-in-use') {
+                            setError('Duplicate Email')
+                        }
+                        if (e.code === 'auth/invalid-email') {
+                            setError('Email is not invalid')
+                        }
+                        if (e.code === 'auth/weak-password') {
+                            setError('Please change strong password')
+                        }
                     })
             } else {
                 // 로그인
@@ -49,23 +61,59 @@ export const Auth = () => {
     const toggleAccount = () => {
         setNewAccount(prevState => !prevState)
     }
+    const onSocialClick = async (e: any) => {
+        const {target: {name}} = e;
+        if (name === 'google') {
+            const googleProvider = new GoogleAuthProvider();
+            await signInWithPopup(firebaseAuth, googleProvider)
+                .then((result) => {
+                    const credential = GoogleAuthProvider.credentialFromResult(result);
+                    const token = credential?.accessToken;
+                    const user = result.user;
+                })
+                .catch(error => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    const email = error.customData.email;
+                    const credential = GoogleAuthProvider.credentialFromError(error)
+                    console.error(`${errorCode} - ${errorMessage}`)
+
+                })
+        } else if (name === 'github') {
+            const githubProvider = new GithubAuthProvider();
+            await signInWithPopup(firebaseAuth, githubProvider)
+                .then((result) => {
+                    const credential = GithubAuthProvider.credentialFromResult(result);
+                    const token = credential?.accessToken;
+                    const user = result.user;
+                })
+                .catch(error => {
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    const email = error.customData.email;
+                    const credential = GithubAuthProvider.credentialFromError(error)
+                    console.error(`${errorCode} - ${errorMessage}`)
+                })
+        }
+    }
 
     return (<div>
-        <form onSubmit={onSubmit}>
-            <input placeholder={'Enter your Email address'} name={'email'} value={inputs.email} type={'email'}
-                   onChange={onChange}
-                   required={true}/>
-            <input placeholder={'Enter your Email address'} name={'password'} value={inputs.password} type={'password'}
-                   onChange={onChange}
-                   required={true}/>
-            <input type={'submit'} value={newAccount ? "Create Account" : "Log In"}/>
-            <span>{error}</span>
-        </form>
-        <span onClick={toggleAccount}> {newAccount ? "Sign In" : "Create Account"}</span>
-        <div>
-            <button>Continue with Google</button>
-            <button>Continue with GitHub</button>
+            <form onSubmit={onSubmit}>
+                <input placeholder={'Enter your Email address'} name={'email'} value={inputs.email} type={'email'}
+                       onChange={onChange}
+                       required={true}/>
+                <input placeholder={'Enter your Email address'} name={'password'} value={inputs.password}
+                       type={'password'}
+                       onChange={onChange}
+                       required={true}/>
+                <input type={'submit'} value={newAccount ? "Create Account" : "Log In"}/>
+                <span>{error}</span>
+            </form>
+            <span onClick={toggleAccount}> {newAccount ? "Sign In" : "Create Account"}</span>
+            <div>
+                <button name={'google'} onClick={onSocialClick}>Continue with Google</button>
+                <button name={'github'} onClick={onSocialClick}>Continue with GitHub</button>
+            </div>
         </div>
-    </div>
     )
 }
