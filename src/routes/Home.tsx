@@ -1,35 +1,43 @@
 import React, {ChangeEvent, useEffect, useState} from "react";
 import {firestoreJob} from "../initFirebase";
-import {collection, addDoc, getDocs} from "firebase/firestore";
+import {collection, addDoc, getDocs, doc, onSnapshot, query, where, orderBy} from "firebase/firestore";
 import moment from "moment";
 
-export const Home = () => {
+interface Tweet {
+    id: string,
+    text: string
+}
+
+export const Home = ({userObj}: any) => {
     const db_path = 'tweets';
     const [tweet, setTweet] = useState<string>("");
-    const [tweets, setTweets] = useState<string[]>([]);
+    const [tweets, setTweets] = useState<Tweet[]>([]);
 
     useEffect(() => {
-        getTweets().then().catch(e => console.log(e));
-    }, [])
-
-    const getTweets = async () => {
-        const querySnapshot = await getDocs(collection(firestoreJob, db_path));
-        querySnapshot.forEach((doc) => {
-            const data = {
-                ...doc.data(),
-                id: doc.id
-            }
+        const q = query(collection(firestoreJob, db_path), orderBy("date_created", "desc"));
+        const unsubscribe = onSnapshot(q, (querySnapshot) => {
+            const arr = querySnapshot.docs.map((doc) => {
+                return {
+                    id: doc.id,
+                    ...doc.data()
+                };
+            });
             // @ts-ignore
-            setTweets(prev => [data, ...prev])
+            setTweets(arr)
         });
-    }
+
+        return () => {
+            unsubscribe()
+        }
+    }, []);
 
     const onSubmit = async (e: ChangeEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
         try {
             const docRef = await addDoc(collection(firestoreJob, db_path), {
-                tweet,
-                date_crated: moment().utc().format()
+                uid: userObj.uid,
+                text: tweet,
+                date_created: moment().utc().format()
             })
             console.log("Document written with ID: ", docRef.id);
 
@@ -51,6 +59,11 @@ export const Home = () => {
             <input type={'submit'} value={'tweet'}/>
         </form>
         <div>
+            {tweets.map((tweet) =>
+                <div key={tweet.id}>
+                    <h4>{tweet.text}</h4>
+                </div>
+            )}
         </div>
     </div>)
 }
