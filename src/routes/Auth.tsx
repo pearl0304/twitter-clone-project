@@ -1,8 +1,7 @@
 import React, {ChangeEvent, useState} from "react";
 // FIREBASE
-import {getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword} from "firebase/auth";
-import {deflateRaw} from "zlib";
-
+import {createUserWithEmailAndPassword, signInWithEmailAndPassword} from "firebase/auth";
+import {firebaseAuth} from "../initFirebase";
 
 type AuthType = {
     email: string,
@@ -17,22 +16,20 @@ export const Auth = () => {
     const [newAccount, setNewAccount] = useState<boolean>(true)
 
     const onChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const {name, value} = e.currentTarget;
+        const {name, value} = e.currentTarget
         setInputs({...inputs, [name]: value})
     }
-    const onSubmit = (e: ChangeEvent<HTMLFormElement>) => {
+    const onSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
         e.preventDefault();
-        try {
-            let data;
-            const auth = getAuth()
-            if (newAccount) {
-                data = createUserWithEmailAndPassword(auth, email, password)
-            } else {
-                data = signInWithEmailAndPassword(auth, email, password)
-            }
+        let data;
+        if (newAccount) {
+            // 계정 새로 생성
+            data = await createUserWithEmailAndPassword(firebaseAuth, email, password)
             console.log(data)
-        } catch (e) {
-            console.error(e)
+        } else {
+            // 로그인
+            data = await signInWithEmailAndPassword(firebaseAuth, email, password)
+
         }
     }
 
