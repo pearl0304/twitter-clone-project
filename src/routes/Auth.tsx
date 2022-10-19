@@ -12,6 +12,8 @@ export const Auth = () => {
         email: "",
         password: ""
     });
+    const [error, setError] = useState<string>("")
+
     const {email, password} = inputs;
     const [newAccount, setNewAccount] = useState<boolean>(true)
 
@@ -21,19 +23,34 @@ export const Auth = () => {
     }
     const onSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
         e.preventDefault();
-        let data;
-        if (newAccount) {
-            // 계정 새로 생성
-            data = await createUserWithEmailAndPassword(firebaseAuth, email, password)
-            console.log(data)
-        } else {
-            // 로그인
-            data = await signInWithEmailAndPassword(firebaseAuth, email, password)
+        try {
+            let data;
+            if (newAccount) {
+                // 계정 새로 생성
+                await createUserWithEmailAndPassword(firebaseAuth, email, password)
+                    .then(async user => {
+                        console.log('User account created % sign in', user)
+                    })
+                    .catch(e => {
+                        if (e.code === 'auth/email-already-in-use') {setError('Duplicate Email')}
+                        if (e.code === 'auth/invalid-email') {setError('Email is not invalid')}
+                        if (e.code === 'auth/weak-password') {setError('Please change strong password')}
+                    })
+            } else {
+                // 로그인
+                await signInWithEmailAndPassword(firebaseAuth, email, password)
 
+            }
+        } catch (e) {
+            console.warn(e)
         }
     }
 
-    return <div>
+    const toggleAccount = () => {
+        setNewAccount(prevState => !prevState)
+    }
+
+    return (<div>
         <form onSubmit={onSubmit}>
             <input placeholder={'Enter your Email address'} name={'email'} value={inputs.email} type={'email'}
                    onChange={onChange}
@@ -42,10 +59,13 @@ export const Auth = () => {
                    onChange={onChange}
                    required={true}/>
             <input type={'submit'} value={newAccount ? "Create Account" : "Log In"}/>
+            <span>{error}</span>
         </form>
+        <span onClick={toggleAccount}> {newAccount ? "Sign In" : "Create Account"}</span>
         <div>
             <button>Continue with Google</button>
             <button>Continue with GitHub</button>
         </div>
     </div>
+    )
 }
