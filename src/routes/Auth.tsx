@@ -23,11 +23,11 @@ export const Auth = () => {
     const {email, password} = inputs;
     const [newAccount, setNewAccount] = useState<boolean>(true)
 
-    const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const onChange = (e: ChangeEvent<HTMLInputElement>): void => {
         const {name, value} = e.currentTarget
         setInputs({...inputs, [name]: value})
     }
-    const onSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
+    const onSubmit = async (e: ChangeEvent<HTMLFormElement>): Promise<void> => {
         e.preventDefault();
         try {
             let data;
@@ -58,7 +58,7 @@ export const Auth = () => {
         }
     }
 
-    const toggleAccount = () => {
+    const toggleAccount = (): void => {
         setNewAccount(prevState => !prevState)
     }
     const onSocialClick = async (e: any) => {
