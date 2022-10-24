@@ -47,6 +47,7 @@ export const Tweets = ({tweet, is_owner}: any) => {
                 (
                     <>
                         <h4>{tweet.text}</h4>
+                        {tweet.imageURL && <img src={tweet.imageURL} width={'50px'} height={'50px'}/>}
                         {is_owner && <>
                           <button onClick={onDeleteClick}>Delete Tweet</button>
                           <button onClick={toggleEditing}>Edit Tweet</button>
