@@ -2,8 +2,9 @@ import React, {ChangeEvent, useState} from "react";
 import moment from "moment";
 
 // FIREBASE
+import {firestoreJob, fireStorage} from "../initFirebase";
 import {doc, deleteDoc, updateDoc} from "firebase/firestore";
-import {firestoreJob} from "../initFirebase";
+import {ref, deleteObject} from "firebase/storage";
 
 
 export const Tweets = ({tweet, is_owner}: any) => {
@@ -12,9 +13,13 @@ export const Tweets = ({tweet, is_owner}: any) => {
 
     const onDeleteClick = async () => {
         const is_delete = window.confirm('Are you sure you want delete this tweet?');
-        if (is_delete) await deleteDoc(doc(firestoreJob, "tweets", tweet.id));
+        if (is_delete) {
+            await deleteDoc(doc(firestoreJob, "tweets", tweet.id));
+            await deleteObject(ref(fireStorage, tweet.imageURL));
+        }
+        ;
     }
-    const toggleEditing = () => setEditing(prevState => !prevState)
+    const toggleEditing = () => setEditing(prevState => !prevState);
 
     const onSubmit = async (e: ChangeEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -27,7 +32,7 @@ export const Tweets = ({tweet, is_owner}: any) => {
 
     const onChange = (e: ChangeEvent<HTMLInputElement>) => {
         const {value} = e.currentTarget;
-        setNewTweet(value)
+        setNewTweet(value);
     }
 
     return (
