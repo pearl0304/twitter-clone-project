@@ -20,10 +20,11 @@ export default function App() {
             }
             setInit(true);
         })
-    }, [])
+    }, []);
     return (
         <>
-            {init ? <AppRouter isLoggedIn={isLoggedIn} userObj={userObj}/> : "Initializing..."}
+            {init ?
+                <AppRouter isLoggedIn={isLoggedIn} userObj={userObj}/> : "Initializing..."}
         </>
 
     );
